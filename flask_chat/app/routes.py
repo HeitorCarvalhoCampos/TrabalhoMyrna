@@ -52,6 +52,10 @@ def usuario():
             # Se for uma pergunta, consulta o Gemini
             if msg.strip().endswith("?"):
                 resposta = responder_pergunta(msg)
+
+                # seu código de juízes de IA aqui 
+
+                # após verificar se ocorreu alucinação, gravar a resposta no log da sessão
                 registrar_log("GEMINI", resposta, session["chat_id"])
         elif "encerrar" in request.form:
             registrar_log("SISTEMA", f"=== Fim da Sessão {session['chat_id']} ===", session["chat_id"])
