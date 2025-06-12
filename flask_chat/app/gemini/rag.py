@@ -9,6 +9,8 @@ from langchain.chains import RetrievalQA
 # Carrega a variável de ambiente do arquivo .env (se você estiver usando .env)
 load_dotenv()
 chave_api = os.getenv("GEMINI_API_KEY") # Configura a API key
+if not chave_api:
+    raise ValueError("GEMINI_API_KEY não configurada.")
 api_key = chave_api
 
 # Caminho para arquivos de texto

@@ -9,7 +9,7 @@
     <h1>{% block cabecalho %}{% endblock %}</h1>
 
     {% block formulario %}
-    <form method="POST" onsubmit="return validarFormulario(this)">
+    <form id="formulario" method="POST" onsubmit="return validarFormulario(this)">
       <input type="text" name="mensagem" id="campoMensagem" placeholder="Digite sua mensagem">
       <div class="button-group">
         <button type="submit" name="enviar" onclick="setRequisito(true)">Enviar</button>
@@ -23,6 +23,11 @@
       }
     
       function validarFormulario(form) {
+        const campo = document.getElementById("campoMensagem");
+        if (campo.required && campo.value.trim() === "") {
+          alert("Digite uma mensagem antes de enviar.");
+          return false;
+        }
         return true;
       }
     </script>
@@ -31,9 +36,13 @@
     <h2>Janela do Chat</h2>
     {% block chat %}
     <pre id="historico">
-      {% for linha in historico %}
-      {{ linha|safe }}
-      {% endfor %}
+      {% if historico %}
+        {% for linha in historico %}
+          {{ linha|safe }}
+        {% endfor %}
+      {% else %}
+        <p><em>Sem mensagens no momento.</em></p>
+      {% endif %}
     </pre>
     {% endblock %}
 

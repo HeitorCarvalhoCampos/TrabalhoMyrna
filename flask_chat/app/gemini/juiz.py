@@ -7,6 +7,8 @@ import google.generativeai as genai
 # Carrega a variável de ambiente do arquivo .env (se você estiver usando .env)
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY") # Configura a API key
+if not api_key:
+    raise ValueError("GEMINI_API_KEY não configurada.")
 genai.configure(api_key=api_key)
 
 #instanciar o juiz
