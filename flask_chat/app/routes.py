@@ -3,6 +3,7 @@ from datetime import datetime
 from app import socketio
 import os
 from app.gemini.modelo import responder_pergunta
+from app.gemini.juiz import avaliar_resposta
 
 bp = Blueprint("chat", __name__)
 
@@ -16,7 +17,7 @@ def registrar_log(origem, mensagem, chat_id):
             f.write(f"[{timestamp}] [{origem}] {mensagem}\n")
         html = f"[{timestamp}] [{origem}] {mensagem}"
         socketio.emit("nova_mensagem", {"html": html})
-    
+
 def carregar_historico():
     chat_id = session.get("chat_id")
     caminho = f"logs/chat_{chat_id}.log"
@@ -29,6 +30,10 @@ def carregar_historico():
                     cor = "red"
                 elif "[ATENDENTE]" in linha:
                     cor = "blue"
+                elif "[GEMINI]" in linha:
+                    cor = "green"
+                elif "[JUIZ]" in linha:
+                    cor = "purple"
                 else:
                     cor = "black"
                 linhas_coloridas.append(f'<font color="{cor}">{linha.strip()}</font>')
@@ -49,17 +54,16 @@ def usuario():
             msg = request.form["mensagem"]
             registrar_log("USUÁRIO", msg, session["chat_id"])
 
-            # Se for uma pergunta, consulta o Gemini
             if msg.strip().endswith("?"):
                 resposta = responder_pergunta(msg)
-
-                # seu código de juízes de IA aqui 
-
-                # após verificar se ocorreu alucinação, gravar a resposta no log da sessão
                 registrar_log("GEMINI", resposta, session["chat_id"])
+
+                avaliacao = avaliar_resposta(msg, resposta)
+                registrar_log("JUIZ", avaliacao, session["chat_id"])
         elif "encerrar" in request.form:
             registrar_log("SISTEMA", f"=== Fim da Sessão {session['chat_id']} ===", session["chat_id"])
             session.pop("chat_id", None)
+
     historico = carregar_historico()
     return render_template("usuario.html", historico=historico, title="Chat - Usuário")
 
@@ -76,5 +80,6 @@ def atendente():
         elif "encerrar" in request.form:
             registrar_log("SISTEMA", f"=== Fim da Sessão {session['chat_id']} ===", session["chat_id"])
             session.pop("chat_id", None)
+
     historico = carregar_historico()
     return render_template("atendente.html", historico=historico, title="Chat - Atendente")
